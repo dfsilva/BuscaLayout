@@ -26,11 +26,11 @@ public class BuscaLayout extends ViewGroup {
     private float mInitialMotionX;
     private float mInitialMotionY;
 
-    private static int state = PanelState.COLLAPSED;
+    private static int panelState = PanelState.COLLAPSED;
     public static class PanelState {
-        public static final int HIDED = 0;
+        public static final int HIDDEN = 0;
         public static final int COLLAPSED = 1;
-        public static final int ANCORED = 2;
+        public static final int ANCHORED = 2;
         public static final int EXPANDED = 3;
     }
 
@@ -75,27 +75,36 @@ public class BuscaLayout extends ViewGroup {
         int width = getMeasuredWidth();
 
         switch (panelState){
-            case PanelState.ANCORED:{
+            case PanelState.ANCHORED:{
+                this.setVisibility(View.VISIBLE);
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height - pnlResultado.getHeight());
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
                 break;
             }
             case PanelState.COLLAPSED:{
+                this.setVisibility(View.VISIBLE);
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
                 break;
             }
+            case PanelState.HIDDEN: {
+                this.setVisibility(View.GONE);
+            }
         }
 
-        this.state = panelState;
+        this.panelState = panelState;
+    }
+
+    public int getPanelState(){
+        return this.panelState;
     }
 
     private void alternatePanelState(){
-        switch(state){
+        switch(panelState){
             case PanelState.COLLAPSED:
-                setPanelState(PanelState.ANCORED);
+                setPanelState(PanelState.ANCHORED);
                 break;
-            case PanelState.ANCORED:
+            case PanelState.ANCHORED:
                 setPanelState(PanelState.COLLAPSED);
                 break;
         }
