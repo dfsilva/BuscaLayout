@@ -21,12 +21,18 @@ public class BuscaLayout extends ViewGroup {
     private int pnlResultadoId = -1;
     private View pnlResultado;
 
-    private boolean painelVisivel = false;
-
 
     private float mPrevMotionY;
     private float mInitialMotionX;
     private float mInitialMotionY;
+
+    private static int state = PanelState.COLLAPSED;
+    public static class PanelState {
+        public static final int HIDED = 0;
+        public static final int COLLAPSED = 1;
+        public static final int ANCORED = 2;
+        public static final int EXPANDED = 3;
+    }
 
     public BuscaLayout(Context context) {
         super(context);
@@ -62,19 +68,36 @@ public class BuscaLayout extends ViewGroup {
         v3.setY((height - txTituloResultado.getHeight()));
     }
 
-    private void alterarStreetView() {
+
+    public void setPanelState(int panelState){
 
         int height = getMeasuredHeight();
         int width = getMeasuredWidth();
 
-        if (painelVisivel) {
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
-            ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
-            painelVisivel = false;
-        } else {
-            painelVisivel = true;
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height - pnlResultado.getHeight());
-            ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+        switch (panelState){
+            case PanelState.ANCORED:{
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height - pnlResultado.getHeight());
+                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                break;
+            }
+            case PanelState.COLLAPSED:{
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
+                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                break;
+            }
+        }
+
+        this.state = panelState;
+    }
+
+    private void alternatePanelState(){
+        switch(state){
+            case PanelState.COLLAPSED:
+                setPanelState(PanelState.ANCORED);
+                break;
+            case PanelState.ANCORED:
+                setPanelState(PanelState.COLLAPSED);
+                break;
         }
     }
 
@@ -106,7 +129,7 @@ public class BuscaLayout extends ViewGroup {
             txTituloResultado.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    alterarStreetView();
+                   alternatePanelState();
                 }
             });
         }
