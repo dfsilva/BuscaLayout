@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="BuscaLayout">
-        <attr name="blTxDetalheId" format="reference" />
+        <attr name="pnlTxResultadoId" format="reference" />
         <attr name="pnlResultadoId" format="reference" />
+        <attr name="pnlCampoBuscaId" format="reference"/>
     </declare-styleable>
 </resources>

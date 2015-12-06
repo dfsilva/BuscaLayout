@@ -21,12 +21,17 @@ public class BuscaLayout extends ViewGroup {
     private int pnlResultadoId = -1;
     private View pnlResultado;
 
+    private int pnlCampoBuscaId = -1;
+    private View pnlCampoBusca;
+    private int pnlSearchBotton;
 
     private float mPrevMotionY;
     private float mInitialMotionX;
     private float mInitialMotionY;
 
-    private static int panelState = PanelState.COLLAPSED;
+    private int lastPanelState = PanelState.EXPANDED;
+    private int panelState = PanelState.COLLAPSED;
+
     public static class PanelState {
         public static final int HIDDEN = 0;
         public static final int COLLAPSED = 1;
@@ -34,17 +39,19 @@ public class BuscaLayout extends ViewGroup {
         public static final int EXPANDED = 3;
     }
 
+    private boolean primeiroLayout = false;
+
     public BuscaLayout(Context context) {
         super(context);
     }
 
     public BuscaLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.BuscaLayout);
-        if(attrs != null){
-            txTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_blTxDetalheId, -1);
+        if (attrs != null) {
+            txTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
             pnlResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlResultadoId, -1);
+            pnlCampoBuscaId = ta.getResourceId(R.styleable.BuscaLayout_pnlCampoBuscaId, -1);
         }
     }
 
@@ -56,58 +63,20 @@ public class BuscaLayout extends ViewGroup {
         int height = getMeasuredHeight();
         int width = getMeasuredWidth();
 
-
         View v1 = getChildAt(0);
-        v1.layout(l, actionBarSize, r, b);
+        v1.layout(l, t, r, b);
 
         View v2 = getChildAt(1);
-        v2.layout(l + 20, actionBarSize + 100, r - 20, actionBarSize + 200);
+        v2.layout(l, t + 15, r, (t + 15) + v2.getMeasuredHeight());
+        pnlSearchBotton = (t + 15) + pnlCampoBusca.getMeasuredHeight();
 
         View v3 = getChildAt(2);
-        v3.layout(l, (itemHeight * 2) + actionBarSize, r, (3 * itemHeight)+actionBarSize);
-        v3.setY((height - txTituloResultado.getHeight()));
-    }
+        v3.layout(l, pnlSearchBotton, r, b);
 
-
-    public void setPanelState(int panelState){
-
-        int height = getMeasuredHeight();
-        int width = getMeasuredWidth();
-
-        switch (panelState){
-            case PanelState.ANCHORED:{
-                this.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height - pnlResultado.getHeight());
-                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
-                break;
-            }
-            case PanelState.COLLAPSED:{
-                this.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
-                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
-                break;
-            }
-            case PanelState.HIDDEN: {
-                this.setVisibility(View.GONE);
-            }
+        if(primeiroLayout) {
+            v3.setY((height - txTituloResultado.getHeight()));
         }
-
-        this.panelState = panelState;
-    }
-
-    public int getPanelState(){
-        return this.panelState;
-    }
-
-    private void alternatePanelState(){
-        switch(panelState){
-            case PanelState.COLLAPSED:
-                setPanelState(PanelState.ANCHORED);
-                break;
-            case PanelState.ANCHORED:
-                setPanelState(PanelState.COLLAPSED);
-                break;
-        }
+        primeiroLayout = false;
     }
 
     @Override
@@ -133,66 +102,130 @@ public class BuscaLayout extends ViewGroup {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        if(txTituloResultadoId != -1){
+        if (txTituloResultadoId != -1) {
             txTituloResultado = findViewById(txTituloResultadoId);
             txTituloResultado.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   alternatePanelState();
+                    setPanelState(lastPanelState);
                 }
             });
         }
 
-        if(pnlResultadoId != -1){
+        if (pnlResultadoId != -1) {
             pnlResultado = findViewById(pnlResultadoId);
         }
-    }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-
-        final int action = MotionEventCompat.getActionMasked(ev);
-
-        if(action == MotionEvent.ACTION_DOWN){
-
-        }else if(action == MotionEvent.ACTION_MOVE){
+        if (pnlCampoBuscaId != -1) {
+            pnlCampoBusca = findViewById(pnlCampoBuscaId);
 
         }
-
-        return super.dispatchTouchEvent(ev);
     }
 
-
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-
-        final int action = MotionEventCompat.getActionMasked(ev);
-        final float x = ev.getX();
-        final float y = ev.getY();
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN: {
-                mInitialMotionX = x;
-                mInitialMotionY = y;
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                final float adx = Math.abs(x - mInitialMotionX);
-                final float ady = Math.abs(y - mInitialMotionY);
-
-                break;
-            }
-
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-                break;
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (h != oldh) {
+            primeiroLayout = true;
         }
-        return super.onInterceptTouchEvent(ev);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event);
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        primeiroLayout = true;
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        primeiroLayout = true;
+    }
+
+    //    @Override
+//    public boolean dispatchTouchEvent(MotionEvent ev) {
+//
+//        final int action = MotionEventCompat.getActionMasked(ev);
+//
+//        if (action == MotionEvent.ACTION_DOWN) {
+//
+//        } else if (action == MotionEvent.ACTION_MOVE) {
+//
+//        }
+//
+//        return super.dispatchTouchEvent(ev);
+//    }
+//
+//
+//    @Override
+//    public boolean onInterceptTouchEvent(MotionEvent ev) {
+//
+//        final int action = MotionEventCompat.getActionMasked(ev);
+//        final float x = ev.getX();
+//        final float y = ev.getY();
+//
+//        switch (action) {
+//            case MotionEvent.ACTION_DOWN: {
+//                mInitialMotionX = x;
+//                mInitialMotionY = y;
+//                break;
+//            }
+//
+//            case MotionEvent.ACTION_MOVE: {
+//                final float adx = Math.abs(x - mInitialMotionX);
+//                final float ady = Math.abs(y - mInitialMotionY);
+//
+//                break;
+//            }
+//
+//            case MotionEvent.ACTION_CANCEL:
+//            case MotionEvent.ACTION_UP:
+//                break;
+//        }
+//        return super.onInterceptTouchEvent(ev);
+//    }
+//
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        return super.onTouchEvent(event);
+//    }
+
+
+    public void setPanelState(int panelState) {
+
+        int height = getMeasuredHeight();
+        int width = getMeasuredWidth();
+
+        switch (panelState) {
+            case PanelState.ANCHORED: {
+                pnlResultado.setVisibility(View.VISIBLE);
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height / 2);
+                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                break;
+            }
+            case PanelState.COLLAPSED: {
+                pnlResultado.setVisibility(View.VISIBLE);
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
+                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                break;
+            }
+            case PanelState.EXPANDED: {
+                pnlResultado.setVisibility(View.VISIBLE);
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", pnlSearchBotton);
+                ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                break;
+            }
+            case PanelState.HIDDEN: {
+                pnlResultado.setVisibility(View.GONE);
+                break;
+            }
+        }
+
+        lastPanelState = this.panelState;
+        this.panelState = panelState;
+    }
+
+    public int getPanelState() {
+        return this.panelState;
     }
 }
