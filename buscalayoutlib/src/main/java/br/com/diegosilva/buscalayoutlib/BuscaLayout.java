@@ -29,8 +29,10 @@ public class BuscaLayout extends ViewGroup {
     private float mInitialMotionX;
     private float mInitialMotionY;
 
-    private int lastPanelState = PanelState.EXPANDED;
+    private int inversePanelState = PanelState.EXPANDED;
     private int panelState = PanelState.COLLAPSED;
+
+    private int actionBarSize;
 
     public static class PanelState {
         public static final int HIDDEN = 0;
@@ -40,6 +42,8 @@ public class BuscaLayout extends ViewGroup {
     }
 
     private boolean primeiroLayout = false;
+
+    private PanelStateListener panelStateListener;
 
     public BuscaLayout(Context context) {
         super(context);
@@ -57,8 +61,8 @@ public class BuscaLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int actionBarSize = UIUtils.getThemeAttributeDimensionSize(getContext(), android.R.attr.actionBarSize);
-        int itemHeight = (b - actionBarSize) / getChildCount();
+        actionBarSize = UIUtils.getThemeAttributeDimensionSize(getContext(), android.R.attr.actionBarSize);
+        //int itemHeight = (b - actionBarSize) / getChildCount();
 
         int height = getMeasuredHeight();
         int width = getMeasuredWidth();
@@ -71,10 +75,10 @@ public class BuscaLayout extends ViewGroup {
         pnlSearchBotton = (t + 15) + pnlCampoBusca.getMeasuredHeight();
 
         View v3 = getChildAt(2);
-        v3.layout(l, pnlSearchBotton, r, b);
+        v3.layout(l, pnlSearchBotton, r, b-actionBarSize);
 
-        if(primeiroLayout) {
-            v3.setY((height - txTituloResultado.getHeight()));
+        if (primeiroLayout) {
+            v3.setY((height - txTituloResultado.getHeight()) - actionBarSize);
         }
         primeiroLayout = false;
     }
@@ -107,7 +111,7 @@ public class BuscaLayout extends ViewGroup {
             txTituloResultado.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setPanelState(lastPanelState);
+                    changePanelState();
                 }
             });
         }
@@ -191,6 +195,28 @@ public class BuscaLayout extends ViewGroup {
 //    }
 
 
+    private void changePanelState() {
+
+        switch (panelState) {
+            case PanelState.ANCHORED: {
+                setPanelState(PanelState.COLLAPSED);
+                break;
+            }
+            case PanelState.COLLAPSED: {
+                setPanelState(inversePanelState);
+                break;
+            }
+            case PanelState.EXPANDED: {
+                setPanelState(PanelState.COLLAPSED);
+                break;
+            }
+            case PanelState.HIDDEN: {
+                setPanelState(inversePanelState);
+                break;
+            }
+        }
+    }
+
     public void setPanelState(int panelState) {
 
         int height = getMeasuredHeight();
@@ -199,33 +225,62 @@ public class BuscaLayout extends ViewGroup {
         switch (panelState) {
             case PanelState.ANCHORED: {
                 pnlResultado.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", height / 2);
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height-actionBarSize) / 2);
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+                if(panelStateListener != null){
+                    panelStateListener.onPanelAnchored(pnlResultado);
+                }
                 break;
             }
             case PanelState.COLLAPSED: {
                 pnlResultado.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight()));
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight() - actionBarSize));
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+
+                if(panelStateListener != null){
+                    panelStateListener.onPanelCollapsed(pnlResultado);
+                }
                 break;
             }
             case PanelState.EXPANDED: {
                 pnlResultado.setVisibility(View.VISIBLE);
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", pnlSearchBotton);
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
+
+                if(panelStateListener != null){
+                    panelStateListener.onPanelExpanded(pnlResultado);
+                }
                 break;
             }
             case PanelState.HIDDEN: {
                 pnlResultado.setVisibility(View.GONE);
+                if(panelStateListener != null){
+                    panelStateListener.onPanelHidden(pnlResultado);
+                }
                 break;
             }
         }
-
-        lastPanelState = this.panelState;
+        inversePanelState = this.panelState;
         this.panelState = panelState;
     }
 
     public int getPanelState() {
         return this.panelState;
+    }
+
+
+    public void setPanelStateListener(PanelStateListener panelStateListener) {
+        this.panelStateListener = panelStateListener;
+    }
+
+    public interface PanelStateListener {
+
+        public void onPanelCollapsed(View panel);
+
+        public void onPanelExpanded(View panel);
+
+        public void onPanelAnchored(View panel);
+
+        public void onPanelHidden(View panel);
     }
 }

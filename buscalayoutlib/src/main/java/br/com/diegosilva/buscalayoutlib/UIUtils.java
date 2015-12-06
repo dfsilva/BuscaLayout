@@ -2,6 +2,7 @@ package br.com.diegosilva.buscalayoutlib;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.util.DisplayMetrics;
 
 /**
  * Created by Diego on 30/11/2015.
