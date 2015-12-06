@@ -75,7 +75,7 @@ public class BuscaLayout extends ViewGroup {
         pnlSearchBotton = (t + 15) + pnlCampoBusca.getMeasuredHeight();
 
         View v3 = getChildAt(2);
-        v3.layout(l, pnlSearchBotton, r, b-actionBarSize);
+        v3.layout(l, pnlSearchBotton, r, b);
 
         if (primeiroLayout) {
             v3.setY((height - txTituloResultado.getHeight()) - actionBarSize);
