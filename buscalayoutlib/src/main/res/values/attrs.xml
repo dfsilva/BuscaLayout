@@ -4,5 +4,6 @@
         <attr name="pnlTxResultadoId" format="reference" />
         <attr name="pnlResultadoId" format="reference" />
         <attr name="pnlCampoBuscaId" format="reference"/>
+        <attr name="pnlContentResultadoId" format="reference"/>
     </declare-styleable>
 </resources>

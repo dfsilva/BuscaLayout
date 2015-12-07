@@ -23,6 +23,10 @@ public class BuscaLayout extends ViewGroup {
 
     private int pnlCampoBuscaId = -1;
     private View pnlCampoBusca;
+
+    private int pnlContentResultadoId = -1;
+    private View pnlContentResultado;
+
     private int pnlSearchBotton;
 
     private float mPrevMotionY;
@@ -56,6 +60,7 @@ public class BuscaLayout extends ViewGroup {
             txTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
             pnlResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlResultadoId, -1);
             pnlCampoBuscaId = ta.getResourceId(R.styleable.BuscaLayout_pnlCampoBuscaId, -1);
+            pnlContentResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlContentResultadoId,-1);
         }
     }
 
@@ -81,6 +86,8 @@ public class BuscaLayout extends ViewGroup {
             v3.setY((height - txTituloResultado.getHeight()) - actionBarSize);
         }
         primeiroLayout = false;
+
+        pnlContentResultado.getLayoutParams().height = (b- pnlSearchBotton - txTituloResultado.getHeight());
     }
 
     @Override
@@ -122,7 +129,10 @@ public class BuscaLayout extends ViewGroup {
 
         if (pnlCampoBuscaId != -1) {
             pnlCampoBusca = findViewById(pnlCampoBuscaId);
+        }
 
+        if(pnlContentResultadoId != -1){
+            pnlContentResultado = findViewById(pnlContentResultadoId);
         }
     }
 
