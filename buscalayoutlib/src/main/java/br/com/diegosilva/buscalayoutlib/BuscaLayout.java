@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,10 +29,6 @@ public class BuscaLayout extends ViewGroup {
     private View pnlContentResultado;
 
     private int pnlSearchBotton;
-
-    private float mPrevMotionY;
-    private float mInitialMotionX;
-    private float mInitialMotionY;
 
     private int inversePanelState = PanelState.EXPANDED;
     private int panelState = PanelState.COLLAPSED;
@@ -58,12 +55,16 @@ public class BuscaLayout extends ViewGroup {
 
     public BuscaLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.BuscaLayout);
-        if (attrs != null) {
-            pnlTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
-            pnlResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlResultadoId, -1);
-            pnlCampoBuscaId = ta.getResourceId(R.styleable.BuscaLayout_pnlCampoBuscaId, -1);
-            pnlContentResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlContentResultadoId,-1);
+
+        if(attrs != null) {
+            TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.BuscaLayout);
+            if (ta != null) {
+                pnlTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
+                pnlResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlResultadoId, -1);
+                pnlCampoBuscaId = ta.getResourceId(R.styleable.BuscaLayout_pnlCampoBuscaId, -1);
+                pnlContentResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlContentResultadoId, -1);
+            }
+            ta.recycle();
         }
     }
 
@@ -90,7 +91,7 @@ public class BuscaLayout extends ViewGroup {
         }
         primeiroLayout = false;
 
-       // pnlContentResultado.getLayoutParams().height = (b- pnlSearchBotton - txTituloResultado.getHeight());
+        // pnlContentResultado.getLayoutParams().height = (b- pnlSearchBotton - txTituloResultado.getHeight());
         expandedSize = (b - pnlSearchBotton - pnlTituloResultado.getHeight());
         anchoredSize = (height / 2) - pnlTituloResultado.getHeight();
     }
@@ -114,6 +115,10 @@ public class BuscaLayout extends ViewGroup {
         }
     }
 
+
+    private float mInitialMotionX;
+    private float mInitialMotionY;
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -126,6 +131,38 @@ public class BuscaLayout extends ViewGroup {
                     changePanelState();
                 }
             });
+
+            pnlTituloResultado.setOnTouchListener(new OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+
+                    final int action = MotionEventCompat.getActionMasked(event);
+                    final float x = event.getX();
+                    final float y = event.getY();
+
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN: {
+                            mInitialMotionX = x;
+                            mInitialMotionY = y;
+                            break;
+                        }
+
+                        case MotionEvent.ACTION_MOVE: {
+                            final float adx = Math.abs(x - mInitialMotionX);
+                            final float ady = Math.abs(y - mInitialMotionY);
+
+                            break;
+                        }
+
+                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_UP:
+                            break;
+                    }
+
+                    return true;
+                }
+            });
+
         }
 
         if (pnlResultadoId != -1) {
@@ -136,7 +173,7 @@ public class BuscaLayout extends ViewGroup {
             pnlCampoBusca = findViewById(pnlCampoBuscaId);
         }
 
-        if(pnlContentResultadoId != -1){
+        if (pnlContentResultadoId != -1) {
             pnlContentResultado = findViewById(pnlContentResultadoId);
         }
     }
@@ -160,55 +197,6 @@ public class BuscaLayout extends ViewGroup {
         super.onDetachedFromWindow();
         primeiroLayout = true;
     }
-
-    //    @Override
-//    public boolean dispatchTouchEvent(MotionEvent ev) {
-//
-//        final int action = MotionEventCompat.getActionMasked(ev);
-//
-//        if (action == MotionEvent.ACTION_DOWN) {
-//
-//        } else if (action == MotionEvent.ACTION_MOVE) {
-//
-//        }
-//
-//        return super.dispatchTouchEvent(ev);
-//    }
-//
-//
-//    @Override
-//    public boolean onInterceptTouchEvent(MotionEvent ev) {
-//
-//        final int action = MotionEventCompat.getActionMasked(ev);
-//        final float x = ev.getX();
-//        final float y = ev.getY();
-//
-//        switch (action) {
-//            case MotionEvent.ACTION_DOWN: {
-//                mInitialMotionX = x;
-//                mInitialMotionY = y;
-//                break;
-//            }
-//
-//            case MotionEvent.ACTION_MOVE: {
-//                final float adx = Math.abs(x - mInitialMotionX);
-//                final float ady = Math.abs(y - mInitialMotionY);
-//
-//                break;
-//            }
-//
-//            case MotionEvent.ACTION_CANCEL:
-//            case MotionEvent.ACTION_UP:
-//                break;
-//        }
-//        return super.onInterceptTouchEvent(ev);
-//    }
-//
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        return super.onTouchEvent(event);
-//    }
-
 
     private void changePanelState() {
 
@@ -241,9 +229,9 @@ public class BuscaLayout extends ViewGroup {
             case PanelState.ANCHORED: {
                 pnlContentResultado.getLayoutParams().height = anchoredSize;
                 pnlResultado.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", ((height-actionBarSize) / 2) +pnlTituloResultado.getHeight());
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", ((height - actionBarSize) / 2) + pnlTituloResultado.getHeight());
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
-                if(panelStateListener != null){
+                if (panelStateListener != null) {
                     panelStateListener.onPanelAnchored(pnlResultado);
                 }
                 break;
@@ -254,7 +242,7 @@ public class BuscaLayout extends ViewGroup {
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - pnlTituloResultado.getHeight() - actionBarSize));
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
 
-                if(panelStateListener != null){
+                if (panelStateListener != null) {
                     panelStateListener.onPanelCollapsed(pnlResultado);
                 }
                 break;
@@ -265,7 +253,7 @@ public class BuscaLayout extends ViewGroup {
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", pnlSearchBotton);
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
 
-                if(panelStateListener != null){
+                if (panelStateListener != null) {
                     panelStateListener.onPanelExpanded(pnlResultado);
                 }
                 break;
@@ -273,7 +261,7 @@ public class BuscaLayout extends ViewGroup {
             case PanelState.HIDDEN: {
                 pnlContentResultado.getLayoutParams().height = expandedSize;
                 pnlResultado.setVisibility(View.GONE);
-                if(panelStateListener != null){
+                if (panelStateListener != null) {
                     panelStateListener.onPanelHidden(pnlResultado);
                 }
                 break;
