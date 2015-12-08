@@ -15,8 +15,8 @@ import android.view.ViewGroup;
  */
 public class BuscaLayout extends ViewGroup {
 
-    private int txTituloResultadoId = -1;
-    private View txTituloResultado;
+    private int pnlTituloResultadoId = -1;
+    private View pnlTituloResultado;
 
     private int pnlResultadoId = -1;
     private View pnlResultado;
@@ -38,6 +38,9 @@ public class BuscaLayout extends ViewGroup {
 
     private int actionBarSize;
 
+    private int expandedSize;
+    private int anchoredSize;
+
     public static class PanelState {
         public static final int HIDDEN = 0;
         public static final int COLLAPSED = 1;
@@ -57,7 +60,7 @@ public class BuscaLayout extends ViewGroup {
         super(context, attrs);
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.BuscaLayout);
         if (attrs != null) {
-            txTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
+            pnlTituloResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlTxResultadoId, -1);
             pnlResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlResultadoId, -1);
             pnlCampoBuscaId = ta.getResourceId(R.styleable.BuscaLayout_pnlCampoBuscaId, -1);
             pnlContentResultadoId = ta.getResourceId(R.styleable.BuscaLayout_pnlContentResultadoId,-1);
@@ -83,11 +86,13 @@ public class BuscaLayout extends ViewGroup {
         v3.layout(l, pnlSearchBotton, r, b);
 
         if (primeiroLayout) {
-            v3.setY((height - txTituloResultado.getHeight()) - actionBarSize);
+            v3.setY((height - pnlTituloResultado.getHeight()) - actionBarSize);
         }
         primeiroLayout = false;
 
-        pnlContentResultado.getLayoutParams().height = (b- pnlSearchBotton - txTituloResultado.getHeight());
+       // pnlContentResultado.getLayoutParams().height = (b- pnlSearchBotton - txTituloResultado.getHeight());
+        expandedSize = (b - pnlSearchBotton - pnlTituloResultado.getHeight());
+        anchoredSize = (height / 2) - pnlTituloResultado.getHeight();
     }
 
     @Override
@@ -113,9 +118,9 @@ public class BuscaLayout extends ViewGroup {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        if (txTituloResultadoId != -1) {
-            txTituloResultado = findViewById(txTituloResultadoId);
-            txTituloResultado.setOnClickListener(new OnClickListener() {
+        if (pnlTituloResultadoId != -1) {
+            pnlTituloResultado = findViewById(pnlTituloResultadoId);
+            pnlTituloResultado.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     changePanelState();
@@ -234,8 +239,9 @@ public class BuscaLayout extends ViewGroup {
 
         switch (panelState) {
             case PanelState.ANCHORED: {
+                pnlContentResultado.getLayoutParams().height = anchoredSize;
                 pnlResultado.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height-actionBarSize) / 2);
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", ((height-actionBarSize) / 2) +pnlTituloResultado.getHeight());
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
                 if(panelStateListener != null){
                     panelStateListener.onPanelAnchored(pnlResultado);
@@ -243,8 +249,9 @@ public class BuscaLayout extends ViewGroup {
                 break;
             }
             case PanelState.COLLAPSED: {
+                pnlContentResultado.getLayoutParams().height = expandedSize;
                 pnlResultado.setVisibility(View.VISIBLE);
-                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - txTituloResultado.getHeight() - actionBarSize));
+                PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", (height - pnlTituloResultado.getHeight() - actionBarSize));
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
 
                 if(panelStateListener != null){
@@ -253,6 +260,7 @@ public class BuscaLayout extends ViewGroup {
                 break;
             }
             case PanelState.EXPANDED: {
+                pnlContentResultado.getLayoutParams().height = expandedSize;
                 pnlResultado.setVisibility(View.VISIBLE);
                 PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("y", pnlSearchBotton);
                 ObjectAnimator.ofPropertyValuesHolder(pnlResultado, pvhY).setDuration(200).start();
@@ -263,6 +271,7 @@ public class BuscaLayout extends ViewGroup {
                 break;
             }
             case PanelState.HIDDEN: {
+                pnlContentResultado.getLayoutParams().height = expandedSize;
                 pnlResultado.setVisibility(View.GONE);
                 if(panelStateListener != null){
                     panelStateListener.onPanelHidden(pnlResultado);
