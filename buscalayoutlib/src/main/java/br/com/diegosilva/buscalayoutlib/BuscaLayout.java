@@ -132,36 +132,36 @@ public class BuscaLayout extends ViewGroup {
                 }
             });
 
-            pnlTituloResultado.setOnTouchListener(new OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-
-                    final int action = MotionEventCompat.getActionMasked(event);
-                    final float x = event.getX();
-                    final float y = event.getY();
-
-                    switch (action) {
-                        case MotionEvent.ACTION_DOWN: {
-                            mInitialMotionX = x;
-                            mInitialMotionY = y;
-                            break;
-                        }
-
-                        case MotionEvent.ACTION_MOVE: {
-                            final float adx = Math.abs(x - mInitialMotionX);
-                            final float ady = Math.abs(y - mInitialMotionY);
-
-                            break;
-                        }
-
-                        case MotionEvent.ACTION_CANCEL:
-                        case MotionEvent.ACTION_UP:
-                            break;
-                    }
-
-                    return true;
-                }
-            });
+//            pnlTituloResultado.setOnTouchListener(new OnTouchListener() {
+//                @Override
+//                public boolean onTouch(View v, MotionEvent event) {
+//
+//                    final int action = MotionEventCompat.getActionMasked(event);
+//                    final float x = event.getX();
+//                    final float y = event.getY();
+//
+//                    switch (action) {
+//                        case MotionEvent.ACTION_DOWN: {
+//                            mInitialMotionX = x;
+//                            mInitialMotionY = y;
+//                            break;
+//                        }
+//
+//                        case MotionEvent.ACTION_MOVE: {
+//                            final float adx = Math.abs(x - mInitialMotionX);
+//                            final float ady = Math.abs(y - mInitialMotionY);
+//
+//                            break;
+//                        }
+//
+//                        case MotionEvent.ACTION_CANCEL:
+//                        case MotionEvent.ACTION_UP:
+//                            break;
+//                    }
+//
+//                    return true;
+//                }
+//            });
 
         }
 
