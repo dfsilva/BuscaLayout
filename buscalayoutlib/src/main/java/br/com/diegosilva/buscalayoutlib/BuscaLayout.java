@@ -280,6 +280,10 @@ public class BuscaLayout extends ViewGroup {
         this.inversePanelState = inversePanelState;
     }
 
+    public int getInversePanelState(){
+        return this.inversePanelState;
+    }
+
     public void setPanelStateListener(PanelStateListener panelStateListener) {
         this.panelStateListener = panelStateListener;
     }
